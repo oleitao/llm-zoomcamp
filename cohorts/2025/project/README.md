@@ -17,6 +17,9 @@ based on Elon Musk's Twitter history*
 
 <div align="center">
 
+### Live Demo
+<img src="./screenshots/streamlit.gif" alt="Elon Musk AI Chatbot Demo" width="80%">
+
 ### Main Chat Interface
 <img src="./screenshots/screenshot1.png" alt="Chat Interface" width="45%">
 <img src="./screenshots/screenshot 2.png" alt="Chat Responses" width="45%">
