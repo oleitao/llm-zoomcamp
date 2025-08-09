@@ -13,7 +13,7 @@ based on Elon Musk's Twitter history*
 
 ## 🚀 Screenshots & Demo
 
-**Try it live:** [**Streamlit Cloud Demo**](https://oleitao-ai-app-rag.streamlit.app/)
+**Try it live:** [**Streamlit Cloud Demo**](https://llm-test-7ajasdnzvhpy3supwsudmq.streamlit.app/)
 
 <div align="center">
 
@@ -300,7 +300,7 @@ This project is licensed under the MIT License - see the
   
 **⭐ Star this repository if you found it helpful!**
 
-[Live Demo](https://oleitao-ai-app-rag.streamlit.app/) | 
+[Live Demo](https://llm-test-7ajasdnzvhpy3supwsudmq.streamlit.app/) | 
 [Documentation](https://github.com/oleitao/llm-zoomcamp/wiki) | 
 [Issues](https://github.com/oleitao/llm-zoomcamp/issues)
 
