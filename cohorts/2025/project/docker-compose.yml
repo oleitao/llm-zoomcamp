@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: rag_app
+    ports:
+      - "8501:8501"
+    environment:
+      - LANCEDB_PATH=/app/data/lancedb
+      - LANCEDB_TABLE=tweets
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - MONGO_DB_URL=mongodb://mongodb:27017
+      # ---- OpenTelemetry -> Collector ----
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+      - OTEL_RESOURCE_ATTRIBUTES=service.name=rag_app,deployment.environment=dev
+      - OTEL_SERVICE_NAME=rag_app
+    volumes:
+      - lancedb_data:/app/data/lancedb
+    depends_on:
+      - mongodb
+      - otel-collector
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+
+  # ---------- ClickHouse ----------
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse
+    ports:
+      - "8123:8123"   # HTTP
+      # - "9000:9000" # (não precisa expor para fora; interno já chega)
+    environment:
+      - CLICKHOUSE_DB=openlit
+      - CLICKHOUSE_USER=default
+      - CLICKHOUSE_PASSWORD=
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8123/ping | grep -q Ok"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+    restart: unless-stopped
+
+  # ---------- OpenTelemetry Collector ----------
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.131.0
+    container_name: otel-collector
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    ports:
+      - "4318:4318"   # OTLP HTTP
+      # - "4317:4317" # OTLP gRPC (opcional)
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ---------- OpenLIT UI ----------
+  openlit:
+    image: ghcr.io/openlit/openlit:latest
+    container_name: openlit
+    ports:
+      - "3000:3000"
+    environment:
+      - INIT_DB_HOST=clickhouse
+      - INIT_DB_PORT=8123
+      - INIT_DB_DATABASE=openlit
+      - INIT_DB_USERNAME=default
+      - INIT_DB_PASSWORD=
+      - SQLITE_DATABASE_URL=file:/app/client/data/data.db
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
+  lancedb_data:
+  clickhouse_data:
